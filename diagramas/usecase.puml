@@ -1,0 +1,54 @@
+@startuml UseCases_HelpBot
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Usuário\n(Funcionário)" as Usuario
+actor "Atendente/\nEquipe Técnica" as Atendente
+actor "Administrador" as Admin
+actor "KEV\n(Classificador LLM)" as KEV <<system>>
+actor "Qwen (Ollama)\n(LLM Local)" as Qwen <<system>>
+
+rectangle "Sistema HelpBot" {
+
+  usecase "Enviar mensagem/\nsolicitação" as UC1
+  usecase "Consultar status\ndo chamado" as UC2
+  usecase "Receber orientação\nautomática" as UC3
+  usecase "Classificar\nsolicitação" as UC4
+  usecase "Gerar resposta\ncontextual" as UC5
+  usecase "Registrar chamado" as UC6
+  usecase "Encaminhar chamado\npara setor responsável" as UC7
+  usecase "Visualizar chamados\nabertos" as UC8
+  usecase "Atualizar status\ndo chamado" as UC9
+  usecase "Responder\nao usuário" as UC10
+  usecase "Gerenciar usuários\ne permissões" as UC11
+  usecase "Visualizar métricas\ne relatórios" as UC12
+  usecase "Configurar categorias\nde chamados" as UC13
+  usecase "Monitorar desempenho\ndos LLMs" as UC14
+  usecase "Autenticar-se" as UC15
+
+  Usuario --> UC15
+  Usuario --> UC1
+  Usuario --> UC2
+  UC1 ..> UC4 : <<include>>
+  UC4 ..> UC5 : <<include>>
+  UC5 ..> UC3 : <<extend>>
+  UC5 ..> UC6 : <<extend>>
+  UC6 --> UC7
+
+  UC4 --> KEV
+  UC5 --> Qwen
+
+  Atendente --> UC15
+  Atendente --> UC8
+  Atendente --> UC9
+  Atendente --> UC10
+
+  Admin --> UC15
+  Admin --> UC11
+  Admin --> UC12
+  Admin --> UC13
+  Admin --> UC14
+}
+
+@enduml

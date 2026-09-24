@@ -1,0 +1,66 @@
+@startuml Arquitetura_HelpBot
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+package "Frontend - Chat (TypeScript + Components)" {
+  [Chat Widget UI] as ChatUI
+  [Componentes\n(Mensagens, Input, Status)] as ChatComponents
+  [Cliente HTTP/WebSocket] as ChatClient
+}
+
+package "Frontend - ADM (React)" {
+  [Painel Administrativo] as AdmUI
+  [Dashboard de Métricas] as AdmDashboard
+  [Gestão de Chamados] as AdmChamados
+  [Gestão de Usuários] as AdmUsuarios
+}
+
+package "Backend (Go)" {
+  [API Gateway / REST] as API
+  [Serviço de Autenticação] as AuthService
+  [Serviço de Chamados\n(Tickets)] as TicketService
+  [Serviço de Encaminhamento\n(Routing)] as RoutingService
+  [Orquestrador de IA] as AIOrchestrator
+  [Serviço de Métricas] as MetricsService
+}
+
+package "Camada de IA (LLMs Locais)" {
+  [KEV\n(Classificador de Intenção)] as KEV
+  [Qwen via Ollama\n(Geração de Respostas)] as QwenOllama
+  [Ollama Runtime] as OllamaRuntime
+}
+
+database "Banco de Dados\n(PostgreSQL)" as DB
+queue "Fila de Mensagens\n(opcional: RabbitMQ/Kafka)" as Queue
+
+ChatUI --> ChatComponents
+ChatComponents --> ChatClient
+ChatClient --> API : HTTP/WebSocket
+
+AdmUI --> AdmDashboard
+AdmUI --> AdmChamados
+AdmUI --> AdmUsuarios
+AdmDashboard --> API : HTTP
+AdmChamados --> API : HTTP
+AdmUsuarios --> API : HTTP
+
+API --> AuthService
+API --> TicketService
+API --> AIOrchestrator
+API --> MetricsService
+
+TicketService --> RoutingService
+TicketService --> DB
+AuthService --> DB
+MetricsService --> DB
+
+AIOrchestrator --> KEV : classificar texto
+AIOrchestrator --> QwenOllama : gerar resposta
+KEV --> OllamaRuntime
+QwenOllama --> OllamaRuntime
+
+AIOrchestrator ..> Queue : (opcional)\nprocessamento assíncrono
+RoutingService --> TicketService : atualiza\nencaminhamento
+
+@enduml

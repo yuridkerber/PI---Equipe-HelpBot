@@ -1,0 +1,43 @@
+@startuml Arquitetura_LLMs_Baratas
+
+skinparam componentStyle rectangle
+
+package "Backend (Go)" {
+  [Orquestrador de IA\n(Strategy Selector)] as Orchestrator
+}
+
+package "Camada Local (custo zero por token)" {
+  [KEV\n(Classificador)] as KEV
+  [Qwen 4B/7B\nvia Ollama] as Qwen
+  [Llama 3 8B\nvia Ollama] as Llama
+  [Phi-3 Mini\nvia Ollama] as Phi
+  note bottom of Qwen
+    Custo: apenas infraestrutura
+    (GPU/CPU local)
+    Ideal para: classificação
+    e respostas simples
+  end note
+}
+
+package "Camada Cloud - Baixo Custo (fallback)" {
+  [Gemini Flash] as Gemini
+  [DeepSeek Flash] as DeepSeek
+  [Llama 3.1 8B\n(API hospedada)] as LlamaAPI
+  [GPT-4o-mini] as GPT4oMini
+  note bottom of DeepSeek
+    Usado quando o modelo
+    local não é suficiente
+  end note
+}
+
+Orchestrator --> KEV : 1) classifica intenção
+Orchestrator --> Qwen : 2a) resposta padrão\n(baixa complexidade)
+Orchestrator --> Llama : 2b) alternativa local
+Orchestrator --> Phi : 2c) tarefas leves/rápidas
+
+Orchestrator --> Gemini : 3) fallback\n(alta demanda)
+Orchestrator --> DeepSeek : 3) fallback\n(custo reduzido)
+Orchestrator --> LlamaAPI : 3) fallback\n(escala sob demanda)
+Orchestrator --> GPT4oMini : 3) fallback\n(qualidade/custo)
+
+@enduml
